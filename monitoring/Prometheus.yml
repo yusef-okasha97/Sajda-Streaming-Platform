@@ -7,7 +7,7 @@ spec:
   project: default
 
   source:
-    repoURL: https://github.com/yusef-okasha97/quran-streaming-eks.git   
+    repoURL:repoURL: https://prometheus-community.github.io/helm-charts
     chart: kube-prometheus-stack
     targetRevision: 65.0.0         
     path: monitoring                
