@@ -14,8 +14,18 @@ spec:
         app: nginx
     spec:
       containers:
+        # Existing application container
         - name: quran-app
           image: yoyo7sniper97/quran-app-argo:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 5050
+
+        # Prometheus metrics sidecar
+        - name: nginx-exporter
+          image: nginx/nginx-prometheus-exporter:0.13.0
+          args:
+            - "-nginx.scrape-uri=http://localhost:5050/nginx_status"
+          ports:
+            - name: metrics
+              containerPort: 9113
