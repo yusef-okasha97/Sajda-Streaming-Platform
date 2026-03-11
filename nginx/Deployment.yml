@@ -23,7 +23,7 @@ spec:
 
         # Prometheus metrics sidecar
         - name: nginx-exporter
-          image: nginx/nginx-prometheus-exporter:0.14.0
+          image: nginx/nginx-prometheus-exporter:latest
           args:
             - "-nginx.scrape-uri=http://localhost:5050/nginx_status"
           ports:
