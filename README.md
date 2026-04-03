@@ -12,7 +12,7 @@ A production-ready DevOps project demonstrating a complete CI/CD and GitOps work
     * Pushes the clean image to Docker Registry.
 * **Continuous Delivery (GitOps):** Managed by **Argo CD** on the EKS cluster, automatically syncing changes in the `nginx` folder/manifests.
 * **Containerization:** Custom **Nginx** Docker image.
-* **Orchestration:** **K8s** Kubernetes managing deployments and services.
+* **Orchestration:** Kubernetes managing deployments and services.
 * **Observability & Monitoring:** Fully monitored using **Prometheus** and **Grafana** for real-time cluster and pod metrics.
 
 ---
