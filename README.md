@@ -1,5 +1,6 @@
 # 🕋 Quran Streaming Platform (GitOps on EKS)
-![3aa6d5a2-da5c-42f8-8619-077424720ed4](https://github.com/user-attachments/assets/ee1533e6-66f1-4f1d-8353-78a5d85b238b)
+![3aa6d5a2-da5c-42f8-8619-077424720ed4](https://github.com/user-attachments/assets/ddc53fd0-2523-4674-a844-11ea740324b1)
+
 
 A production-ready DevOps project demonstrating a complete CI/CD and GitOps workflow for a Quran streaming application deployed on AWS EKS (Elastic Kubernetes Service).
 
