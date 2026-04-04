@@ -1,5 +1,3 @@
-# التطبيق + sidecar Promtail (لوجات الملف → Loki إن وُجد). Probes على / جاهزة.
-# الصورة من CI-app/dockerfile (node:alpine). بدون Loki في الستاك: احذف كونتينر promtail والـ volumes المرتبطة أو عطّل الـ sidecar.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -15,71 +13,10 @@ spec:
       labels:
         app: nginx
     spec:
-      volumes:
-        - name: app-logs
-          emptyDir: {}
-        - name: promtail-config
-          configMap:
-            name: quran-promtail-config
       containers:
+        # Existing application container
         - name: quran-app
           image: yoyo7sniper97/quran-app-argo:latest
           imagePullPolicy: Always
-          workingDir: /usr/src/app
-          # نسخ stdout/stderr إلى ملف مشترك مع Promtail (tee). الـ shell هنا ليس PID 1 لـ node؛ لإيقاف أنظف لاحقاً يمكن استخدام dumb-init أو تعديل التطبيق ليكتب ملفاً مباشرة.
-          command: ["/bin/sh", "-c"]
-          args:
-            - "node server.js 2>&1 | tee -a /var/log/quran-app/app.log"
           ports:
-            - name: http
-              containerPort: 5050
-          volumeMounts:
-            - name: app-logs
-              mountPath: /var/log/quran-app
-          readinessProbe:
-            httpGet:
-              path: /
-              port: http
-            initialDelaySeconds: 5
-            periodSeconds: 10
-            timeoutSeconds: 3
-            successThreshold: 1
-            failureThreshold: 3
-          livenessProbe:
-            httpGet:
-              path: /
-              port: http
-            initialDelaySeconds: 20
-            periodSeconds: 20
-            timeoutSeconds: 5
-            failureThreshold: 3
-          startupProbe:
-            httpGet:
-              path: /
-              port: http
-            failureThreshold: 30
-            periodSeconds: 5
-          resources:
-            requests:
-              cpu: 50m
-              memory: 128Mi
-            limits:
-              memory: 512Mi
-
-        - name: promtail
-          image: grafana/promtail:2.9.8
-          imagePullPolicy: IfNotPresent
-          args:
-            - -config.file=/etc/promtail/config.yml
-          volumeMounts:
-            - name: app-logs
-              mountPath: /var/log/quran-app
-              readOnly: true
-            - name: promtail-config
-              mountPath: /etc/promtail
-          resources:
-            requests:
-              cpu: 25m
-              memory: 64Mi
-            limits:
-              memory: 256Mi
+            - containerPort: 5050
