@@ -14,6 +14,7 @@ spec:
         app: nginx
     spec:
       containers:
+        # Existing application container
         - name: quran-app
           image: yoyo7sniper97/quran-app-argo:latest
           imagePullPolicy: Always
