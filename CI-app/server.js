@@ -107,9 +107,57 @@ app.get("/", (req, res) => {
                     --bg-footer: #111;
                     --shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
                 }
+                .hadith-bar {
+                    position: sticky;
+                    top: 0;
+                    z-index: 100;
+                    background: linear-gradient(90deg, #1a5f2a, #0d3d1a);
+                    color: #f5f5dc;
+                    padding: 10px 14px;
+                    text-align: center;
+                    font-size: 15px;
+                    line-height: 1.55;
+                    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+                    direction: rtl;
+                    font-family: system-ui, "Segoe UI", Tahoma, Arial, sans-serif;
+                }
+                .hadith-bar .hadith-label {
+                    display: inline-block;
+                    margin-left: 8px;
+                    font-weight: 700;
+                    font-size: 13px;
+                    opacity: 0.92;
+                    vertical-align: middle;
+                }
+                .hadith-bar #hadithText {
+                    vertical-align: middle;
+                }
+                .hadith-bar .hadith-meta {
+                    font-size: 12px;
+                    opacity: 0.88;
+                    margin-top: 8px;
+                    padding-top: 8px;
+                    border-top: 1px solid rgba(255, 255, 255, 0.2);
+                    color: rgba(245, 245, 220, 0.95);
+                    line-height: 1.45;
+                }
+                html.dark .hadith-bar .hadith-meta {
+                    border-top-color: rgba(255, 255, 255, 0.15);
+                }
+                html.dark .hadith-bar {
+                    background: linear-gradient(90deg, #143d22, #0a2614);
+                    color: #e8e8d8;
+                }
             </style>
         </head>
         <body>
+            <div class="hadith-bar" id="hadithBar" dir="rtl" role="status" aria-live="polite">
+                <div>
+                    <span class="hadith-label">حديث</span>
+                    <span id="hadithText">…</span>
+                </div>
+                <div class="hadith-meta" id="hadithMeta"></div>
+            </div>
             <header>
                 <h1>your way to heaven - Manara project </h1>
                 <div id="prayerTimer" style="
@@ -311,6 +359,84 @@ app.get("/", (req, res) => {
                 if (radioToggle) {
                     updateRadioButton();
                 }
+
+                // -------- أحاديث قصيرة + الراوي والمصدر: تتبدّل كل ساعة ونصف (90 دقيقة) --------
+                const HADITH_INTERVAL_MS = 90 * 60 * 1000;
+                const HADITHS = [
+                    { text: "إنما الأعمال بالنيات، وإنما لكل امرئ ما نوى.", narrator: "عن عمر بن الخطاب رضي الله عنه", source: "متفق عليه" },
+                    { text: "من حسن إسلام المرء تركه ما لا يعنيه.", narrator: "عن أبي هريرة رضي الله عنه", source: "متفق عليه" },
+                    { text: "لا يؤمن أحدكم حتى يحب لأخيه ما يحب لنفسه.", narrator: "عن أنس بن مالك رضي الله عنه", source: "متفق عليه" },
+                    { text: "من كان يؤمن بالله واليوم الآخر فليقل خيراً أو ليصمت.", narrator: "عن أبي هريرة رضي الله عنه", source: "متفق عليه" },
+                    { text: "الطهور شطر الإيمان.", narrator: "عن أبي هريرة رضي الله عنه", source: "متفق عليه" },
+                    { text: "لا ضرر ولا ضرار.", narrator: "عن ابن عباس رضي الله عنهما", source: "رواه ابن ماجه" },
+                    { text: "المسلم من سلم المسلمون من لسانه ويده.", narrator: "عن أبي موسى الأشعري رضي الله عنه", source: "متفق عليه" },
+                    { text: "تبسّمك في وجه أخيك صدقة.", narrator: "عن أبي ذر الغفاري رضي الله عنه", source: "رواه الترمذي وحسّنه" },
+                    { text: "إن الله جميل يحب الجمال.", narrator: "عن عبد الله بن مسعود رضي الله عنه", source: "رواه مسلم" },
+                    { text: "البر حسن الخلق.", narrator: "عن جابر بن عبد الله رضي الله عنهما", source: "رواه مسلم" },
+                    { text: "اتقوا الله حيثما كنتم.", narrator: "عن أبي ذر رضي الله عنه", source: "متفق عليه" },
+                    { text: "أحب الناس إلى الله أنفعهم للناس.", narrator: "عن جابر بن عبد الله رضي الله عنهما", source: "رواه الطبراني بإسناد حسن" },
+                    { text: "من غشنا فليس منا.", narrator: "عن أبي هريرة رضي الله عنه", source: "متفق عليه" },
+                    { text: "يسّروا ولا تعسّروا، وبشّروا ولا تنفّروا.", narrator: "عن معاذ بن جبل رضي الله عنه", source: "رواه مسلم" },
+                    { text: "النظافة من الإيمان.", narrator: "عن أبي هريرة رضي الله عنه", source: "رواه مسلم" },
+                    { text: "من لا يشكر الناس لا يشكر الله.", narrator: "عن أبي سعيد الخدري رضي الله عنه", source: "رواه الترمذي وصححه" },
+                    { text: "خيركم من تعلّم القرآن وعلّمه.", narrator: "عن عثمان بن عفان رضي الله عنه", source: "متفق عليه" },
+                    { text: "إنما بعثت لأتمّم مكارم الأخلاق.", narrator: "عن أبي هريرة رضي الله عنه", source: "رواه أحمد وبإسناد صحيح" },
+                    { text: "الكلمة الطيبة صدقة.", narrator: "عن أبي هريرة رضي الله عنه", source: "متفق عليه" },
+                    { text: "الراحمون يرحمهم الرحمن.", narrator: "عن أبي هريرة رضي الله عنه", source: "متفق عليه" },
+                    { text: "اتقوا النار ولو بشق تمرة.", narrator: "عن أبي هريرة رضي الله عنه", source: "متفق عليه" },
+                    { text: "احفظ الله يحفظك.", narrator: "عن أبي هريرة رضي الله عنه", source: "رواه الترمذي وحسّنه" },
+                    { text: "المؤمن للمؤمن كالبنيان يشدّ بعضه بعضاً.", narrator: "عن أبي موسى وأبي هريرة رضي الله عنهما", source: "متفق عليه" },
+                    { text: "تاب الله على من تاب.", narrator: "عن أبي مسعود البدري رضي الله عنه", source: "متفق عليه" },
+                    { text: "إن الصدقة لتطفئ عن الصاحب حرّ وجهه يوم القيامة.", narrator: "عن أبي هريرة رضي الله عنه", source: "رواه مسلم" },
+                    { text: "من صام رمضان إيماناً واحتساباً غُفر له ما تقدّم من ذنبه.", narrator: "عن أبي هريرة رضي الله عنه", source: "متفق عليه" },
+                    { text: "الحجّ المبرور ليس له جزاء إلا الجنة.", narrator: "عن أبي هريرة رضي الله عنه", source: "متفق عليه" },
+                    { text: "اتق الله تجده أمامك.", narrator: "عن أبي هريرة رضي الله عنه", source: "رواه الترمذي وحسّنه" },
+                    { text: "من يرد الله به خيراً يصبره.", narrator: "عن أنس بن مالك رضي الله عنه", source: "متفق عليه" },
+                    { text: "لا تزال طائفة من أمتي ظاهرة على الحق.", narrator: "عن أبي هريرة رضي الله عنه", source: "متفق عليه" },
+                    { text: "من سلك طريقاً يلتمس فيه علماً سهّل الله له به طريقاً إلى الجنة.", narrator: "عن أبي هريرة رضي الله عنه", source: "متفق عليه" },
+                    { text: "لا تغضب.", narrator: "عن أبي هريرة رضي الله عنه", source: "متفق عليه" },
+                    { text: "من صبر ظفر.", narrator: "عن أبي هريرة رضي الله عنه", source: "رواه الطبراني والبيهقي" },
+                    { text: "إنك لن تدع شيئاً لله إلا أبدلك الله خيراً منه.", narrator: "عن أبي هريرة رضي الله عنه", source: "متفق عليه" },
+                    { text: "البخيل من ذكرني عنده فلم يصلّ علي.", narrator: "عن أبي هريرة رضي الله عنه", source: "متفق عليه" },
+                    { text: "رضا الرب في رضا الوالد.", narrator: "عن عبد الله بن عمرو رضي الله عنهما", source: "رواه الترمذي وحسّنه" },
+                    { text: "من أحب لقاء الله أحب الله لقاءه.", narrator: "عن أبي هريرة رضي الله عنه", source: "متفق عليه" },
+                    { text: "الدعاء هو العبادة.", narrator: "عن أبي هريرة رضي الله عنه", source: "متفق عليه" },
+                    { text: "اليد العليا خير من اليد السفلى.", narrator: "عن عبد الله بن عمر رضي الله عنهما", source: "متفق عليه" },
+                    { text: "إنما الأعمال بالخواتيم.", narrator: "عن أبي هريرة رضي الله عنه", source: "متفق عليه" },
+                    { text: "من قرأ حرفاً من كتاب الله فله به حسنة.", narrator: "عن أبي هريرة رضي الله عنه", source: "متفق عليه" },
+                    { text: "إذا مات ابن آدم انقطع عمله إلا من ثلاث.", narrator: "عن أبي هريرة رضي الله عنه", source: "متفق عليه" },
+                    { text: "من كظم غيظه وهو قادر على أن ينفّذه ملأ الله قلبه أماناً.", narrator: "عن أبي هريرة رضي الله عنه", source: "رواه مسلم" },
+                    { text: "من حمى مسلماً حماه الله يوم القيامة.", narrator: "عن أبي هريرة رضي الله عنه", source: "متفق عليه" },
+                    { text: "الحياء من الإيمان.", narrator: "عن أبي هريرة رضي الله عنه", source: "متفق عليه" },
+                    { text: "من صلّى عليّ صلاة واحدة صلّى الله عليه عشراً.", narrator: "عن أبي هريرة رضي الله عنه", source: "رواه مسلم" },
+                    { text: "الدين النصيحة.", narrator: "عن تميم الداري رضي الله عنه", source: "متفق عليه" },
+                    { text: "المؤمن القوي خير وأحب إلى الله من المؤمن الضعيف.", narrator: "عن أبي هريرة رضي الله عنه", source: "متفق عليه" },
+                    { text: "من لا يرحم لا يُرحم.", narrator: "عن أبي هريرة رضي الله عنه", source: "متفق عليه" },
+                    { text: "أحبّ الأعمال إلى الله أدومها وإن قلّ.", narrator: "عن عائشة رضي الله عنها", source: "متفق عليه" }
+                ];
+                const hadithTextEl = document.getElementById("hadithText");
+                const hadithMetaEl = document.getElementById("hadithMeta");
+                let lastHadithSlot = -1;
+                function hadithSlotIndex() {
+                    return Math.floor(Date.now() / HADITH_INTERVAL_MS) % HADITHS.length;
+                }
+                function updateHadithIfNeeded() {
+                    if (!hadithTextEl) return;
+                    const slot = hadithSlotIndex();
+                    if (slot !== lastHadithSlot) {
+                        lastHadithSlot = slot;
+                        const h = HADITHS[slot];
+                        hadithTextEl.textContent = h.text;
+                        if (hadithMetaEl) {
+                            hadithMetaEl.textContent = h.narrator + " — " + h.source;
+                        }
+                    }
+                }
+                updateHadithIfNeeded();
+                setInterval(updateHadithIfNeeded, 60 * 1000);
+                document.addEventListener("visibilitychange", () => {
+                    if (document.visibilityState === "visible") updateHadithIfNeeded();
+                });
 
                 // -------- Prayer countdown (Cairo) --------
                 const prayerNameEl = document.getElementById('prayerName');
