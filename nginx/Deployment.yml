@@ -4,7 +4,7 @@ metadata:
   name: nginx-deployment
   namespace: nginx-app
 spec:
-  replicas: 3
+  replicas: 2
   selector:
     matchLabels:
       app: nginx
@@ -14,9 +14,28 @@ spec:
         app: nginx
     spec:
       containers:
-        # Existing application container
         - name: quran-app
           image: yoyo7sniper97/quran-app-argo:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 5050
+          
+          # 1. Readiness Probe: 
+          readinessProbe:
+            httpGet:
+              path: /          
+              port: 5050
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+
+          # 2. Liveness Probe: 
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 5050
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            successThreshold: 1
+            failureThreshold: 3
