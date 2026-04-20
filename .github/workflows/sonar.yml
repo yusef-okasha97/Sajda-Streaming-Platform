@@ -3,7 +3,7 @@ name: SonarQube Analysis
 on:
   push:
     branches:
-      - main  
+      - main
   pull_request:
     types: [opened, synchronize, reopened]
 
@@ -15,17 +15,19 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  
+          fetch-depth: 0
 
       - name: SonarQube Scan
-        uses: sonarsource/sonarqube-scan-action@v6  # 
+        uses: sonarsource/sonarqube-scan-action@v6
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         with:
           args: >
-            -Dsonar.projectKey=sajda-streaming-platform
+            -Dsonar.projectKey=Sajda-Streaming-Platform
             -Dsonar.sources=.
+            -Dsonar.nodejs.executable=/usr/bin/node
+            -Dsonar.javascript.node.maxspace=2048
             -Dsonar.inclusions=**/*.py,**/*.yaml,**/*.yml,CI-app/docker-compose.yml,CI-app/package-lock.json,CI-app/package.json,CI-app/server.js
             -Dsonar.exclusions=README.md,package-lock.json,**/venv/**,**/.git/**
             -Dsonar.test.exclusions=CI-app/**/*
