@@ -24,7 +24,7 @@ jobs:
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         with:
           args: >
-            -Dsonar.projectKey=Sajda-Streaming-Platform
+            -Dsonar.projectKey=sajda-streaming-platform
             -Dsonar.sources=.
             -Dsonar.nodejs.executable=/usr/bin/node
             -Dsonar.test.exclusions=CI-app/**/*
