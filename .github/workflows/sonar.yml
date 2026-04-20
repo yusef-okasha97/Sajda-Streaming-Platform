@@ -18,15 +18,14 @@ jobs:
           fetch-depth: 0  
 
       - name: SonarQube Scan
-        uses: SonarSource/sonarqube-scan-action@v4
+        uses: sonarsource/sonarqube-scan-action@v6  # 
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         with:
-          
           args: >
-            -Dsonar.projectKey=sajda-streaming-slatform
+            -Dsonar.projectKey=sajda-streaming-platform
             -Dsonar.sources=.
+            -Dsonar.inclusions=**/*.py,**/*.yaml,**/*.yml,CI-app/docker-compose.yml,CI-app/package-lock.json,CI-app/package.json,CI-app/server.js
+            -Dsonar.exclusions=README.md,package-lock.json,**/venv/**,**/.git/**
             -Dsonar.test.exclusions=CI-app/**/*
-            -Dsonar.exclusions=README.md, package-lock.json, **/venv/**, **/__pycache__/**, **/.git/**
-            -Dsonar.inclusions=**/*.py, **/*.yaml, **/*.yml, CI-app/docker-compose.yml, CI-app/package-lock.json, CI-app/package.json, CI-app/server.js
