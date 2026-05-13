@@ -1,0 +1,16 @@
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sPSPForbiddenUsers
+metadata:
+  name: no-root-user
+spec:
+  match:
+    kinds:
+      - apiGroups: [""]
+        kinds: ["Pod"]
+    excludedNamespaces:
+      - kube-system
+      - gatekeeper-system
+      - argo-cd
+  parameters:
+    users: ["root"]
+    runAsNonRoot: true
